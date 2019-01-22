@@ -16,8 +16,8 @@ class ServiceProvider extends BaseServiceProvider
     public function boot()
     {
         $this->publishes([
-            __DIR__ . '/resources/lang' => $this->app->resources() . '/lang'
-        ], 'lang');
+            __DIR__ . '/resources/lang' => $this->app->resourcePath() . '/lang'
+        ], 'smartresponse');
     }
     
     protected function isLaravel53AndUp()

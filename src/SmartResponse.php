@@ -80,8 +80,8 @@ class SmartResponse
      */
     private function returnHtml(Response $response)
     {
-        if (view()->exists($response->getTemplate())) {
-            return view($response->getTemplate(), $response->getData());
+        if (view()->exists($response->getView())) {
+            return view($response->getView(), $response->getData());
         } else {
             if (env("APP_DEBUG")) {
                 dd('No Blade Template Found');

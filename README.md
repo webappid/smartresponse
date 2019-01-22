@@ -38,7 +38,7 @@ use WebAppId\SmartResponse\SmartResponse;
 
 class SampleClass{
     public function getData(Request $request, SmartResponse $smartRespone, Response $response){
-        $response->setTemplate('test'); // ex: blade file name test.blade.php
+        $response->setView('test'); // ex: blade file name test.blade.php
         $response->setData($request);
         return $smartResponse->success($response);
     }

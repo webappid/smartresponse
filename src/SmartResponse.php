@@ -50,7 +50,7 @@ class SmartResponse
      *
      * @param Response $response
      * @param Request $request
-     * @return String $data
+     * @return \Illuminate\Http\Response | String $data
      */
     private function formatData(Response $response, Request $request = null)
     {
@@ -97,7 +97,7 @@ class SmartResponse
      *
      * @param Response $response
      * @param Request $request
-     * @return String $data
+     * @return \Illuminate\Http\Response | String $data
      */
     public function requestNotComplete(Response $response, Request $request = null)
     {
@@ -110,7 +110,7 @@ class SmartResponse
      *
      * @param Response $response
      * @param Request $request
-     * @return String $data
+     * @return \Illuminate\Http\Response | String $data
      */
     public function dataFound(Response $response, Request $request = null)
     {
@@ -123,7 +123,7 @@ class SmartResponse
      *
      * @param Response $response
      * @param Request $request
-     * @return String $data
+     * @return \Illuminate\Http\Response | String $data
      */
     public function requestDenied(Response $response, Request $request = null)
     {
@@ -136,7 +136,7 @@ class SmartResponse
      *
      * @param Response $response
      * @param Request $request
-     * @return String $data
+     * @return \Illuminate\Http\Response | String $data
      */
     public function dataNotFound(Response $response, Request $request = null)
     {
@@ -149,7 +149,7 @@ class SmartResponse
      *
      * @param Response $response
      * @param Request $request
-     * @return String $data
+     * @return \Illuminate\Http\Response | String $data
      */
     public function forbiddenAccess(Response $response, Request $request = null)
     {
@@ -162,7 +162,7 @@ class SmartResponse
      *
      * @param Response $response
      * @param Request $request
-     * @return String $data
+     * @return \Illuminate\Http\Response | String $data
      */
     public function saveDataFailed(Response $response, Request $request = null)
     {
@@ -175,7 +175,7 @@ class SmartResponse
      *
      * @param Response $response
      * @param Request $request
-     * @return String $data
+     * @return \Illuminate\Http\Response | String $data
      */
     public function saveDataSuccess(Response $response, Request $request = null)
     {
@@ -188,7 +188,7 @@ class SmartResponse
      *
      * @param Response $response
      * @param Request $request
-     * @return String $data
+     * @return \Illuminate\Http\Response | String $data
      */
     public function success(Response $response, Request $request = null)
     {
@@ -199,7 +199,7 @@ class SmartResponse
     /**
      * @param Response $response
      * @param Request $request
-     * @return String
+     * @return \Illuminate\Http\Response | String
      */
     public function globalResponse(Response $response, Request $request = null)
     {

@@ -17,7 +17,7 @@ class Response
     private $code;
     private $message;
     private $data;
-    private $template;
+    private $view;
     private $redirect;
     
     /**
@@ -69,19 +69,19 @@ class Response
     }
     
     /**
-     * @return mixed
+     * @return \Illuminate\View\View
      */
-    public function getTemplate()
+    public function getView()
     {
-        return $this->template;
+        return $this->view;
     }
     
     /**
-     * @param mixed $template
+     * @param \Illuminate\View\View
      */
-    public function setTemplate($template)
+    public function setView($view)
     {
-        $this->template = $template;
+        $this->view = $view;
     }
     
     /**

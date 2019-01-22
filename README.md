@@ -1,4 +1,3 @@
-SmartResponse
 SmartResponse is a small lib to help developer to create some smart response html via blade or json object message. 
 
 How to install:

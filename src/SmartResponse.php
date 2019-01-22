@@ -6,8 +6,7 @@
  * Time: 23:52
  */
 
-namespace App\Libs\SmartResponse;
-
+namespace WebAppId\SmartResponse;
 
 use Illuminate\Http\Request;
 

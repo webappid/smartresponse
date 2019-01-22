@@ -6,7 +6,7 @@
  * Time: 12:49
  */
 
-namespace App\Libs\SmartResponse;
+namespace WebAppId\SmartResponse;
 
 /**
  * Class Response

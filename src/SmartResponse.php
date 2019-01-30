@@ -27,9 +27,18 @@ class SmartResponse
         $jsonResponse['message'] = $response->getMessage();
         $jsonResponse['code'] = $response->getCode();
         $jsonResponse['data'] = $response->getData();
-        $jsonResponse['draw'] = $response->getDraw();
-        $jsonResponse['recordsFiltered'] = $response->getRecordsFiltered();
-        $jsonResponse['recordsTotal'] = $response->getRecordsTotal();
+        $draw = $response->getDraw();
+        if ($draw != null) {
+            $jsonResponse['draw'] = $draw;
+        }
+        $recordsFiltered = $response->getRecordsFiltered();
+        if ($recordsFiltered != null) {
+            $jsonResponse['recordsFiltered'] = $recordsFiltered;
+        }
+        $recordsTotal = $response->getRecordsTotal();
+        if ($recordsTotal != null) {
+            $jsonResponse['recordsTotal'] = $recordsTotal;
+        }
         
         return $jsonResponse;
     }

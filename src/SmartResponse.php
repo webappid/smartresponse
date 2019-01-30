@@ -19,14 +19,17 @@ class SmartResponse
     
     /**
      * @param $response
-     * @return mixed
+     * @return array
      */
-    private function responseJson(Response $response)
+    private function responseJson(Response $response): array
     {
         $jsonResponse = Array();
         $jsonResponse['message'] = $response->getMessage();
         $jsonResponse['code'] = $response->getCode();
         $jsonResponse['data'] = $response->getData();
+        $jsonResponse['draw'] = $response->getDraw();
+        $jsonResponse['recordsFiltered'] = $response->getRecordsFiltered();
+        $jsonResponse['recordsTotal'] = $response->getRecordsTotal();
         
         return $jsonResponse;
     }
@@ -50,7 +53,7 @@ class SmartResponse
      *
      * @param Response $response
      * @param Request $request
-     * @return \Illuminate\Http\Response | String $data
+     * @return \Illuminate\Http\Response | String $data | JSON $data
      */
     private function formatData(Response $response, Request $request = null)
     {

@@ -14,11 +14,14 @@ namespace WebAppId\SmartResponse;
  */
 class Response
 {
+    private $draw;
     private $code;
     private $message;
     private $data;
     private $view;
     private $redirect;
+    private $recordsFiltered;
+    private $recordsTotal;
     
     /**
      * @return mixed
@@ -98,6 +101,54 @@ class Response
     public function setRedirect($redirect)
     {
         $this->redirect = $redirect;
+    }
+    
+    /**
+     * @return mixed
+     */
+    public function getRecordsFiltered()
+    {
+        return $this->recordsFiltered;
+    }
+    
+    /**
+     * @param mixed $recordsFiltered
+     */
+    public function setRecordsFiltered($recordsFiltered): void
+    {
+        $this->recordsFiltered = $recordsFiltered;
+    }
+    
+    /**
+     * @return mixed
+     */
+    public function getRecordsTotal()
+    {
+        return $this->recordsTotal;
+    }
+    
+    /**
+     * @param mixed $recordsTotal
+     */
+    public function setRecordsTotal($recordsTotal): void
+    {
+        $this->recordsTotal = $recordsTotal;
+    }
+    
+    /**
+     * @return mixed
+     */
+    public function getDraw()
+    {
+        return $this->draw;
+    }
+    
+    /**
+     * @param mixed $draw
+     */
+    public function setDraw($draw): void
+    {
+        $this->draw = $draw;
     }
     
 }

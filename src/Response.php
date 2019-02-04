@@ -24,33 +24,34 @@ class Response
     private $recordsTotal;
     
     /**
-     * @return mixed
+     * @return string|null
      */
-    public function getCode()
+    public function getCode(): ?string
     {
         return $this->code;
     }
     
+    
     /**
-     * @param mixed $code
+     * @param string $code
      */
-    public function setCode($code)
+    public function setCode(string $code)
     {
         $this->code = $code;
     }
     
     /**
-     * @return mixed
+     * @return string|null
      */
-    public function getMessage()
+    public function getMessage(): ?string
     {
         return $this->message;
     }
     
     /**
-     * @param mixed $message
+     * @param string $message
      */
-    public function setMessage($message)
+    public function setMessage(string $message)
     {
         $this->message = $message;
     }
@@ -71,42 +72,47 @@ class Response
         $this->data = $data;
     }
     
+    
     /**
-     * @return \Illuminate\View\View
+     * @return string|null
      */
-    public function getView()
+    public function getView(): ?string
     {
         return $this->view;
     }
     
+    
     /**
-     * @param \Illuminate\View\View
+     * @param string $view
      */
-    public function setView($view)
+    public function setView(string $view)
     {
         $this->view = $view;
     }
     
+    
     /**
-     * @return mixed
+     * @return string|null
      */
-    public function getRedirect()
+    public function getRedirect(): ?string
     {
         return $this->redirect;
     }
     
+    
     /**
-     * @param mixed $redirect
+     * @param string $redirect
      */
-    public function setRedirect($redirect)
+    public function setRedirect(string $redirect)
     {
         $this->redirect = $redirect;
     }
     
+    
     /**
-     * @return mixed
+     * @return int|null
      */
-    public function getRecordsFiltered()
+    public function getRecordsFiltered(): ?int
     {
         return $this->recordsFiltered;
     }
@@ -114,31 +120,33 @@ class Response
     /**
      * @param mixed $recordsFiltered
      */
-    public function setRecordsFiltered($recordsFiltered): void
+    public function setRecordsFiltered(int $recordsFiltered): void
     {
         $this->recordsFiltered = $recordsFiltered;
     }
     
     /**
-     * @return mixed
+     * @return int|null
      */
-    public function getRecordsTotal()
+    public function getRecordsTotal(): ?int
     {
         return $this->recordsTotal;
     }
     
+    
     /**
-     * @param mixed $recordsTotal
+     * @param int $recordsTotal
      */
-    public function setRecordsTotal($recordsTotal): void
+    public function setRecordsTotal(int $recordsTotal): void
     {
         $this->recordsTotal = $recordsTotal;
     }
     
+    
     /**
-     * @return mixed
+     * @return int|null
      */
-    public function getDraw()
+    public function getDraw(): ?int
     {
         return $this->draw;
     }
@@ -146,7 +154,7 @@ class Response
     /**
      * @param mixed $draw
      */
-    public function setDraw($draw): void
+    public function setDraw(int $draw): void
     {
         $this->draw = $draw;
     }

@@ -74,6 +74,10 @@ class SmartResponse
             $response->setCode('200');
         }
         
+        if($response->getData() ==  null){
+            $response->setData(array());
+        }
+        
         if (request()->wantsJson() || ($request != "" && $request->wantsJson())) {
             return $this->responseJson($response);
         } else {

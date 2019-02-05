@@ -26,10 +26,30 @@ class SmartResponse
         $jsonResponse = Array();
         $jsonResponse['message'] = $response->getMessage();
         $jsonResponse['code'] = $response->getCode();
-        $jsonResponse['data'] = $response->getData();
+    
+        if (method_exists($response->getData(), 'items')) {
+            $jsonResponse['data'] = $response->getData()->items();
+        } else {
+            $jsonResponse['data'] = $response->getData();
+        }
+    
+        if (method_exists($response->getData(), 'perPage')) {
+            $jsonResponse['per_page'] = $response->getData()->perPage();
+        }
+    
+        if (method_exists($response->getData(), 'currentPage')) {
+            $jsonResponse['current_page'] = $response->getData()->currentPage();
+        }
+    
+        if (method_exists($response->getData(), 'path')) {
+            $jsonResponse['path'] = $response->getData()->path();
+        }
+    
         $draw = $response->getDraw();
         if ($draw != null) {
             $jsonResponse['draw'] = $draw;
+        } else {
+            $jsonResponse['draw'] = 0;
         }
         $recordsFiltered = $response->getRecordsFiltered();
         if ($recordsFiltered != null) {

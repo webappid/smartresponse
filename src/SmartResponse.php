@@ -44,21 +44,12 @@ class SmartResponse
         if (method_exists($response->getData(), 'path')) {
             $jsonResponse['path'] = $response->getData()->path();
         }
-    
-        $draw = $response->getDraw();
-        if ($draw != null) {
-            $jsonResponse['draw'] = $draw;
-        } else {
-            $jsonResponse['draw'] = 0;
-        }
-        $recordsFiltered = $response->getRecordsFiltered();
-        if ($recordsFiltered != null) {
-            $jsonResponse['recordsFiltered'] = $recordsFiltered;
-        }
-        $recordsTotal = $response->getRecordsTotal();
-        if ($recordsTotal != null) {
-            $jsonResponse['recordsTotal'] = $recordsTotal;
-        }
+
+        $jsonResponse['draw'] = $response->getDraw() != null ? $response->getDraw() : 0;
+
+        $jsonResponse['recordsFiltered'] = $response->getRecordsFiltered() != null ? $response->getRecordsFiltered() : 0;
+
+        $jsonResponse['recordsTotal'] = $response->getRecordsTotal() != null ? $response->getRecordsTotal() : 0;
         
         return $jsonResponse;
     }

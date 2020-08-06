@@ -8,7 +8,10 @@
 
 namespace WebAppId\SmartResponse;
 
+use Illuminate\Contracts\View\Factory;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\View\View;
 
 /**
  * Class SmartResponse
@@ -16,31 +19,31 @@ use Illuminate\Http\Request;
  */
 class SmartResponse
 {
-    
+
     /**
      * @param $response
      * @return array
      */
     private function responseJson(Response $response): array
     {
-        $jsonResponse = Array();
+        $jsonResponse = array();
         $jsonResponse['message'] = $response->getMessage();
         $jsonResponse['code'] = $response->getCode();
-    
+
         if (method_exists($response->getData(), 'items')) {
             $jsonResponse['data'] = $response->getData()->items();
         } else {
             $jsonResponse['data'] = $response->getData();
         }
-    
+
         if (method_exists($response->getData(), 'perPage')) {
             $jsonResponse['per_page'] = $response->getData()->perPage();
         }
-    
+
         if (method_exists($response->getData(), 'currentPage')) {
             $jsonResponse['current_page'] = $response->getData()->currentPage();
         }
-    
+
         if (method_exists($response->getData(), 'path')) {
             $jsonResponse['path'] = $response->getData()->path();
         }
@@ -50,14 +53,14 @@ class SmartResponse
         $jsonResponse['recordsFiltered'] = $response->getRecordsFiltered() != null ? $response->getRecordsFiltered() : 0;
 
         $jsonResponse['recordsTotal'] = $response->getRecordsTotal() != null ? $response->getRecordsTotal() : 0;
-        
+
         return $jsonResponse;
     }
-    
+
     /**
      * @param $response
      * @param $redirect
-     * @return \Illuminate\Http\RedirectResponse
+     * @return RedirectResponse
      */
     private function getRedirect(Response $response, $redirect)
     {
@@ -67,12 +70,12 @@ class SmartResponse
             return $redirect;
         }
     }
-    
+
     /**
      * Method for final result
      *
      * @param Response $response
-     * @param Request $request
+     * @param Request|null $request
      * @return \Illuminate\Http\Response | String $data | JSON $data
      */
     private function formatData(Response $response, Request $request = null)
@@ -80,30 +83,32 @@ class SmartResponse
         if ($response->getMessage() == null) {
             $response->setMessage(trans('message.' . $response->getCode()));
         }
-        
+
         if ($response->getCode() == null) {
             $response->setCode('200');
         }
-        
-        if($response->getData() ==  null){
+
+        if ($response->getData() == null) {
             $response->setData(array());
         }
-        
+
         if (request()->wantsJson() || ($request != "" && $request->wantsJson())) {
             return $this->responseJson($response);
         } else {
             if ($response->getRedirect() != null) {
-                $redirect = redirect($response->getRedirect())->with('code', $response->getCode())->with('message', $response->getMessage());
-                return $this->getRedirect($response, $redirect);
+                return redirect($response->getRedirect())
+                    ->with('code', $response->getCode())
+                    ->with('message', $response->getMessage())
+                    ->withInput();
             } else {
                 return $this->returnHtml($response);
             }
         }
     }
-    
+
     /**
      * @param Response $response
-     * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View|null
+     * @return Factory|View|null
      */
     private function returnHtml(Response $response)
     {
@@ -111,14 +116,14 @@ class SmartResponse
             return view($response->getView(), $response->getData());
         } else {
             if (env("APP_DEBUG")) {
-                dd('No Blade Template Found');
+                dd('No HTML Template Found');
             } else {
                 abort(404);
             }
             return null;
         }
     }
-    
+
     /**
      * Method call for not not complete request
      *
@@ -131,7 +136,7 @@ class SmartResponse
         $response->setCode('204');
         return $this->formatData($response, $request);
     }
-    
+
     /**
      * Method if data not found
      *
@@ -144,7 +149,7 @@ class SmartResponse
         $response->setCode('302');
         return $this->formatData($response, $request);
     }
-    
+
     /**
      * Method for request denied
      *
@@ -157,7 +162,7 @@ class SmartResponse
         $response->setCode('401');
         return $this->formatData($response, $request);
     }
-    
+
     /**
      * Method if data not found
      *
@@ -170,7 +175,7 @@ class SmartResponse
         $response->setCode('404');
         return $this->formatData($response, $request);
     }
-    
+
     /**
      * Method for forbidden access
      *
@@ -183,7 +188,7 @@ class SmartResponse
         $response->setCode('403');
         return $this->formatData($response, $request);
     }
-    
+
     /**
      * Method for save data failed
      *
@@ -196,7 +201,7 @@ class SmartResponse
         $response->setCode('406');
         return $this->formatData($response, $request);
     }
-    
+
     /**
      * Method for save data success
      *
@@ -209,7 +214,7 @@ class SmartResponse
         $response->setCode('201');
         return $this->formatData($response, $request);
     }
-    
+
     /**
      * Method for success request
      *
@@ -222,7 +227,7 @@ class SmartResponse
         $response->setCode('200');
         return $this->formatData($response, $request);
     }
-    
+
     /**
      * @param Response $response
      * @param Request $request

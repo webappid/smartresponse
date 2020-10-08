@@ -9,9 +9,8 @@
 namespace WebAppId\SmartResponse;
 
 use Illuminate\Contracts\View\Factory;
-use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
-use Illuminate\View\View;
+use Illuminate\Support\Facades\Request;
+use Illuminate\Support\MessageBag;
 
 /**
  * Class SmartResponse
@@ -19,6 +18,53 @@ use Illuminate\View\View;
  */
 class SmartResponse
 {
+
+    /**
+     * @param Response $response
+     * @param Request|null $request
+     * @return array|Factory|View|null
+     */
+    public function requestNotComplete(Response $response, Request $request = null)
+    {
+        $response->setCode('204');
+        return $this->formatData($response, $request);
+    }
+
+    /**
+     * @param Response $response
+     * @param Request|null $request
+     * @return array|Factory|View|null
+     */
+    private function formatData(Response $response, Request $request = null)
+    {
+        if ($response->getMessage() == null) {
+            $response->setMessage(trans('smartresponse::message.' . $response->getCode()));
+        }
+
+        if ($response->getCode() == null) {
+            $response->setCode('200');
+        }
+
+        if ($response->getData() == null) {
+            $response->setData(array());
+        }
+
+        if (request()->wantsJson() || ($request != "" && $request->wantsJson())) {
+            return $this->responseJson($response);
+        } else {
+            if ($response->getRedirect() != null) {
+                $messageBag = app()->make(MessageBag::class);
+                $messageBag->add($response->getCode(), $response->getMessage());
+                return redirect($response->getRedirect())
+                    ->with('code', $response->getCode())
+                    ->with('message', $response->getMessage())
+                    ->withErrors($messageBag)
+                    ->withInput();
+            } else {
+                return $this->returnHtml($response);
+            }
+        }
+    }
 
     /**
      * @param $response
@@ -58,55 +104,6 @@ class SmartResponse
     }
 
     /**
-     * @param $response
-     * @param $redirect
-     * @return RedirectResponse
-     */
-    private function getRedirect(Response $response, $redirect)
-    {
-        if ($response->getRedirect() == null) {
-            return back()->withInput();
-        } else {
-            return $redirect;
-        }
-    }
-
-    /**
-     * Method for final result
-     *
-     * @param Response $response
-     * @param Request|null $request
-     * @return \Illuminate\Http\Response | String $data | JSON $data
-     */
-    private function formatData(Response $response, Request $request = null)
-    {
-        if ($response->getMessage() == null) {
-            $response->setMessage(trans('message.' . $response->getCode()));
-        }
-
-        if ($response->getCode() == null) {
-            $response->setCode('200');
-        }
-
-        if ($response->getData() == null) {
-            $response->setData(array());
-        }
-
-        if (request()->wantsJson() || ($request != "" && $request->wantsJson())) {
-            return $this->responseJson($response);
-        } else {
-            if ($response->getRedirect() != null) {
-                return redirect($response->getRedirect())
-                    ->with('code', $response->getCode())
-                    ->with('message', $response->getMessage())
-                    ->withInput();
-            } else {
-                return $this->returnHtml($response);
-            }
-        }
-    }
-
-    /**
      * @param Response $response
      * @return Factory|View|null
      */
@@ -125,23 +122,10 @@ class SmartResponse
     }
 
     /**
-     * Method call for not not complete request
-     *
-     * @param Response $response
-     * @param Request $request
-     * @return \Illuminate\Http\Response | String $data
-     */
-    public function requestNotComplete(Response $response, Request $request = null)
-    {
-        $response->setCode('204');
-        return $this->formatData($response, $request);
-    }
-
-    /**
      * Method if data not found
      *
      * @param Response $response
-     * @param Request $request
+     * @param Request|null $request
      * @return \Illuminate\Http\Response | String $data
      */
     public function dataFound(Response $response, Request $request = null)
@@ -154,7 +138,7 @@ class SmartResponse
      * Method for request denied
      *
      * @param Response $response
-     * @param Request $request
+     * @param Request|null $request
      * @return \Illuminate\Http\Response | String $data
      */
     public function requestDenied(Response $response, Request $request = null)
@@ -167,7 +151,7 @@ class SmartResponse
      * Method if data not found
      *
      * @param Response $response
-     * @param Request $request
+     * @param Request|null $request
      * @return \Illuminate\Http\Response | String $data
      */
     public function dataNotFound(Response $response, Request $request = null)
@@ -180,7 +164,7 @@ class SmartResponse
      * Method for forbidden access
      *
      * @param Response $response
-     * @param Request $request
+     * @param Request|null $request
      * @return \Illuminate\Http\Response | String $data
      */
     public function forbiddenAccess(Response $response, Request $request = null)
@@ -190,11 +174,9 @@ class SmartResponse
     }
 
     /**
-     * Method for save data failed
-     *
      * @param Response $response
-     * @param Request $request
-     * @return \Illuminate\Http\Response | String $data
+     * @param Request|null $request
+     * @return array|Factory|View|null
      */
     public function saveDataFailed(Response $response, Request $request = null)
     {
@@ -203,11 +185,9 @@ class SmartResponse
     }
 
     /**
-     * Method for save data success
-     *
      * @param Response $response
-     * @param Request $request
-     * @return \Illuminate\Http\Response | String $data
+     * @param Request|null $request
+     * @return array|Factory|View|null
      */
     public function saveDataSuccess(Response $response, Request $request = null)
     {
@@ -216,11 +196,9 @@ class SmartResponse
     }
 
     /**
-     * Method for success request
-     *
      * @param Response $response
-     * @param Request $request
-     * @return \Illuminate\Http\Response | String $data
+     * @param Request|null $request
+     * @return array|Factory|View|null
      */
     public function success(Response $response, Request $request = null)
     {
@@ -230,11 +208,25 @@ class SmartResponse
 
     /**
      * @param Response $response
-     * @param Request $request
-     * @return \Illuminate\Http\Response | String
+     * @param Request|null $request
+     * @return array|Factory|View|null
      */
     public function globalResponse(Response $response, Request $request = null)
     {
         return $this->formatData($response, $request);
+    }
+
+    /**
+     * @param Response $response
+     * @param $redirect
+     * @return mixed
+     */
+    private function getRedirect(Response $response, $redirect)
+    {
+        if ($response->getRedirect() == null) {
+            return back()->withInput();
+        } else {
+            return $redirect;
+        }
     }
 }

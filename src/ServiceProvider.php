@@ -18,10 +18,7 @@ class ServiceProvider extends BaseServiceProvider
         $this->publishes([
             __DIR__ . '/resources/lang' => $this->app->resourcePath() . '/lang'
         ], 'smartresponse');
-    }
-    
-    protected function isLaravel53AndUp()
-    {
-        return version_compare($this->app->version(), '5.3.0', '>=');
+
+        $this->loadTranslationsFrom(__DIR__ . '/resources/lang/', 'smartresponse');
     }
 }

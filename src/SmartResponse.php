@@ -9,8 +9,10 @@
 namespace WebAppId\SmartResponse;
 
 use Illuminate\Contracts\View\Factory;
-use Illuminate\Support\Facades\Request;
-use Illuminate\Support\MessageBag;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Illuminate\View\View;
+use function PHPUnit\Framework\isInstanceOf;
 
 /**
  * Class SmartResponse
@@ -20,25 +22,67 @@ class SmartResponse
 {
 
     /**
-     * @param Response $response
-     * @param Request|null $request
-     * @return array|Factory|View|null
+     * @param $response
+     * @return array
      */
-    public function requestNotComplete(Response $response, Request $request = null)
+    private function responseJson(Response $response): array
     {
-        $response->setCode('204');
-        return $this->formatData($response, $request);
+        $jsonResponse = array();
+        $jsonResponse['message'] = $response->getMessage();
+        $jsonResponse['code'] = $response->getCode();
+
+        if (!is_array($response->getData()) && method_exists($response->getData(), 'items')) {
+            $jsonResponse['data'] = $response->getData()->items();
+        } else {
+            $jsonResponse['data'] = $response->getData();
+        }
+
+        if (!is_array($response->getData()) && method_exists($response->getData(), 'perPage')) {
+            $jsonResponse['per_page'] = $response->getData()->perPage();
+        }
+
+        if (!is_array($response->getData()) && method_exists($response->getData(), 'currentPage')) {
+            $jsonResponse['current_page'] = $response->getData()->currentPage();
+        }
+
+        if (!is_array($response->getData()) && method_exists($response->getData(), 'path')) {
+            $jsonResponse['path'] = $response->getData()->path();
+        }
+
+        $jsonResponse['draw'] = $response->getDraw() != null ? $response->getDraw() : 0;
+
+        $jsonResponse['recordsFiltered'] = $response->getRecordsFiltered() != null ? $response->getRecordsFiltered() : 0;
+
+        $jsonResponse['recordsTotal'] = $response->getRecordsTotal() != null ? $response->getRecordsTotal() : 0;
+
+        return $jsonResponse;
     }
 
     /**
+     * @param $response
+     * @param $redirect
+     * @return RedirectResponse
+     */
+    private function getRedirect(Response $response, $redirect)
+    {
+        if ($response->getRedirect() == null) {
+            return back()->withInput();
+        } else {
+            return $redirect;
+        }
+    }
+
+    /**
+     * Method for final result
+     *
      * @param Response $response
      * @param Request|null $request
-     * @return array|Factory|View|null
+     * @return \Illuminate\Http\Response | String $data | JSON $data
      */
     private function formatData(Response $response, Request $request = null)
     {
         if ($response->getMessage() == null) {
-            $response->setMessage(trans('smartresponse::message.' . $response->getCode()));
+            $response->setMessage(trans('message.' . $response->getCode()));
         }
 
         if ($response->getCode() == null) {
@@ -53,54 +97,14 @@ class SmartResponse
             return $this->responseJson($response);
         } else {
             if ($response->getRedirect() != null) {
-                $messageBag = app()->make(MessageBag::class);
-                $messageBag->add($response->getCode(), $response->getMessage());
                 return redirect($response->getRedirect())
                     ->with('code', $response->getCode())
                     ->with('message', $response->getMessage())
-                    ->withErrors($messageBag)
                     ->withInput();
             } else {
                 return $this->returnHtml($response);
             }
         }
-    }
-
-    /**
-     * @param $response
-     * @return array
-     */
-    private function responseJson(Response $response): array
-    {
-        $jsonResponse = array();
-        $jsonResponse['message'] = $response->getMessage();
-        $jsonResponse['code'] = $response->getCode();
-
-        if (method_exists($response->getData(), 'items')) {
-            $jsonResponse['data'] = $response->getData()->items();
-        } else {
-            $jsonResponse['data'] = $response->getData();
-        }
-
-        if (method_exists($response->getData(), 'perPage')) {
-            $jsonResponse['per_page'] = $response->getData()->perPage();
-        }
-
-        if (method_exists($response->getData(), 'currentPage')) {
-            $jsonResponse['current_page'] = $response->getData()->currentPage();
-        }
-
-        if (method_exists($response->getData(), 'path')) {
-            $jsonResponse['path'] = $response->getData()->path();
-        }
-
-        $jsonResponse['draw'] = $response->getDraw() != null ? $response->getDraw() : 0;
-
-        $jsonResponse['recordsFiltered'] = $response->getRecordsFiltered() != null ? $response->getRecordsFiltered() : 0;
-
-        $jsonResponse['recordsTotal'] = $response->getRecordsTotal() != null ? $response->getRecordsTotal() : 0;
-
-        return $jsonResponse;
     }
 
     /**
@@ -122,10 +126,23 @@ class SmartResponse
     }
 
     /**
+     * Method call for not not complete request
+     *
+     * @param Response $response
+     * @param Request $request
+     * @return \Illuminate\Http\Response | String $data
+     */
+    public function requestNotComplete(Response $response, Request $request = null)
+    {
+        $response->setCode('204');
+        return $this->formatData($response, $request);
+    }
+
+    /**
      * Method if data not found
      *
      * @param Response $response
-     * @param Request|null $request
+     * @param Request $request
      * @return \Illuminate\Http\Response | String $data
      */
     public function dataFound(Response $response, Request $request = null)
@@ -138,7 +155,7 @@ class SmartResponse
      * Method for request denied
      *
      * @param Response $response
-     * @param Request|null $request
+     * @param Request $request
      * @return \Illuminate\Http\Response | String $data
      */
     public function requestDenied(Response $response, Request $request = null)
@@ -151,7 +168,7 @@ class SmartResponse
      * Method if data not found
      *
      * @param Response $response
-     * @param Request|null $request
+     * @param Request $request
      * @return \Illuminate\Http\Response | String $data
      */
     public function dataNotFound(Response $response, Request $request = null)
@@ -164,7 +181,7 @@ class SmartResponse
      * Method for forbidden access
      *
      * @param Response $response
-     * @param Request|null $request
+     * @param Request $request
      * @return \Illuminate\Http\Response | String $data
      */
     public function forbiddenAccess(Response $response, Request $request = null)
@@ -174,9 +191,11 @@ class SmartResponse
     }
 
     /**
+     * Method for save data failed
+     *
      * @param Response $response
-     * @param Request|null $request
-     * @return array|Factory|View|null
+     * @param Request $request
+     * @return \Illuminate\Http\Response | String $data
      */
     public function saveDataFailed(Response $response, Request $request = null)
     {
@@ -185,9 +204,11 @@ class SmartResponse
     }
 
     /**
+     * Method for save data success
+     *
      * @param Response $response
-     * @param Request|null $request
-     * @return array|Factory|View|null
+     * @param Request $request
+     * @return \Illuminate\Http\Response | String $data
      */
     public function saveDataSuccess(Response $response, Request $request = null)
     {
@@ -196,9 +217,11 @@ class SmartResponse
     }
 
     /**
+     * Method for success request
+     *
      * @param Response $response
      * @param Request|null $request
-     * @return array|Factory|View|null
+     * @return \Illuminate\Http\Response | String $data
      */
     public function success(Response $response, Request $request = null)
     {
@@ -209,24 +232,10 @@ class SmartResponse
     /**
      * @param Response $response
      * @param Request|null $request
-     * @return array|Factory|View|null
+     * @return \Illuminate\Http\Response | String
      */
     public function globalResponse(Response $response, Request $request = null)
     {
         return $this->formatData($response, $request);
-    }
-
-    /**
-     * @param Response $response
-     * @param $redirect
-     * @return mixed
-     */
-    private function getRedirect(Response $response, $redirect)
-    {
-        if ($response->getRedirect() == null) {
-            return back()->withInput();
-        } else {
-            return $redirect;
-        }
     }
 }

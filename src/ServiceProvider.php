@@ -18,7 +18,5 @@ class ServiceProvider extends BaseServiceProvider
         $this->publishes([
             __DIR__ . '/resources/lang' => $this->app->resourcePath() . '/lang'
         ], 'smartresponse');
-
-        $this->loadTranslationsFrom(__DIR__ . '/resources/lang/', 'smartresponse');
     }
 }

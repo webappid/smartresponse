@@ -82,7 +82,7 @@ class SmartResponse
     private function formatData(Response $response, Request $request = null)
     {
         if ($response->getMessage() == null) {
-            $response->setMessage(trans('message.' . $response->getCode()));
+            $response->setMessage(trans('smartresponse::message.' . $response->getCode()));
         }
 
         if ($response->getCode() == null) {

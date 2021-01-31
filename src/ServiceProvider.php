@@ -8,13 +8,13 @@
 
 namespace WebAppId\SmartResponse;
 
-use Illuminate\Foundation\Application;
 use Illuminate\Support\ServiceProvider as BaseServiceProvider;
 
 class ServiceProvider extends BaseServiceProvider
 {
     public function boot()
     {
+        $this->loadTranslationsFrom(__DIR__ . '/resources/lang/', 'smartresponse');
         $this->publishes([
             __DIR__ . '/resources/lang' => $this->app->resourcePath() . '/lang'
         ], 'smartresponse');

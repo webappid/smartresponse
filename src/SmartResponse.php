@@ -102,8 +102,8 @@ class SmartResponse
         if (!is_array($response->getData()) && method_exists($response->getData(), 'path')) {
             $jsonResponse['path'] = $response->getData()->path();
         }
-
-        $jsonResponse['draw'] = $response->getDraw() != null ? $response->getDraw() : 0;
+        
+        $jsonResponse['draw'] = request('draw') != null ? request('draw') : 1;
 
         $jsonResponse['recordsFiltered'] = $response->getRecordsFiltered() != null ? $response->getRecordsFiltered() : 0;
 

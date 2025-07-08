@@ -1,6 +1,8 @@
 {
   "name": "webappid/smartresponse",
-  "description": "Smart Response to Blade / Redirect with message / and json format",
+  "version": "3.0.0",
+  "description": "SmartResponse simplifies consistent response handling in Laravel: supports Blade, redirect with messages, and JSON format.",
+  "type": "library",
   "license": "MIT",
   "authors": [
     {
@@ -8,16 +10,15 @@
       "email": "dyan.galih@gmail.com"
     }
   ],
-  "minimum-stability": "dev",
-  "autoload": {
-    "psr-4": {
-      "WebAppId\\SmartResponse\\": "src"
-    }
-  },
   "require": {
     "php": ">=8.0",
-    "illuminate/support": "^8.0|^9.0",
-    "illuminate/database": "^8.0|^9.0"
+    "illuminate/support": "^12.0",
+    "illuminate/database": "^12.0"
+  },
+  "autoload": {
+    "psr-4": {
+      "WebAppId\\SmartResponse\\": "src/"
+    }
   },
   "extra": {
     "branch-alias": {
@@ -28,5 +29,19 @@
         "WebAppId\\SmartResponse\\ServiceProvider"
       ]
     }
+  },
+  "minimum-stability": "dev",
+  "prefer-stable": true,
+  "keywords": [
+    "laravel",
+    "response",
+    "json",
+    "blade",
+    "redirect",
+    "smartresponse"
+  ],
+  "support": {
+    "email": "dyan.galih@gmail.com",
+    "source": "https://gitlab.com/webappid/smartresponse"
   }
 }

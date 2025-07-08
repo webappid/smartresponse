@@ -14,24 +14,8 @@ namespace WebAppId\SmartResponse\Responses;
  * Class AbstractResponse
  * @package WebAppId\SmartResponse\Responses
  */
-abstract class AbstractResponseList
+abstract class AbstractResponseList extends AbstractResponse
 {
-    /**
-     * @var bool
-     */
-    public $status;
-    /**
-     * @var string
-     */
-    public $message;
-
-    /**
-     * @var int
-     */
-    public $count;
-
-    /**
-     * @var int
-     */
-    public $countFiltered;
+    public int $count;
+    public int $countFiltered;
 }

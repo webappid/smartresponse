@@ -1,50 +1,66 @@
-SmartResponse is a small lib to help developer to create some smart response html via blade or json object message. 
+# SmartResponse
 
-How to install:
-* First you need to run this script `composer require webappid/smartresponse`
-* Publish vendor for message lang asset default `php artisan vendor:publish --tag=smartresponse`
- 
-Sample Use in Laravel Controller:
+**SmartResponse** is a lightweight Laravel helper library that simplifies returning consistent responses, whether in JSON format for APIs or HTML rendered via Blade views. It’s perfect for APIs and controller logic that need smart decision-making for response formats.
 
-Success request sample for json
+---
 
-```
+## 📦 Installation
 
+Install via Composer:
+
+```bash
+composer require webappid/smartresponse
+````
+
+---
+
+## 🚀 Usage Examples
+
+### ✅ Return a JSON Success Response
+
+Use this when building API endpoints that return JSON:
+
+```php
+use Illuminate\Http\Request;
 use WebAppId\SmartResponse\Response;
 use WebAppId\SmartResponse\SmartResponse;
 
-class SampleClass{
-    public function getData(Request $request, SmartResponse $smartRespone, Response $response){
-        $response->setData($request);
-        return $smartResponse->success($response);
-    }
-}
-```
-
-and the return json should be:
-```
+class SampleController
 {
-    "code": 200,
-    "message": "Get Data Success",
-    "data" : [Should be Data From Request]
-}
-```
+    public function store(Request $request, SampleService $service)
+    {
+        $response = new ResponseDto();
 
-Success request sample for html use blade
-```
-
-use WebAppId\SmartResponse\Response;
-use WebAppId\SmartResponse\SmartResponse;
-
-class SampleClass{
-    public function getData(Request $request, SmartResponse $smartRespone, Response $response){
-        $response->setView('test'); // ex: blade file name test.blade.php
-        $response->setData($request);
-        return $smartResponse->success($response);
+        try {
+            $data = $service->create($request->all());
+            return $response->created('Sample created', $data);
+        } catch (\Throwable $e) {
+            return $response->handle($e);
+        }
     }
 }
 ```
 
-and the return json should be html generated from blade.
+**Response Output:**
+```json
+{
+    "code": 201,
+    "message": "Create Data Success",
+    "data": {
+        //Your request data
+    }
+}
+```
+## 💬 Support
 
-If you have any question about this lib. Please don't hesitate to drop me an email at dyan.galih@gmail.com or you can send me a message directly via telegram to this account @DyanGalih
+If you have any questions or feedback about this package, feel free to reach out:
+
+- 📧 Email: [dyan.galih@gmail.com](mailto:dyan.galih@gmail.com)
+- 💬 Telegram: [@DyanGalih](https://t.me/DyanGalih)
+
+---
+
+## 🧘 Happy Coding
+
+SmartResponse helps you keep your controller code clean, consistent, and flexible.  
+Happy coding with SmartResponse!

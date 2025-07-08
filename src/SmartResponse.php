@@ -8,240 +8,97 @@
 
 namespace WebAppId\SmartResponse;
 
-use Illuminate\Contracts\View\Factory;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
+use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
 
 /**
  * Class SmartResponse
- * @package App\Libs\SmartResponse
+ * @package WebAppId\SmartResponse
  */
 class SmartResponse
 {
+    public int $code = 200;
+    public string $message = '';
+    public mixed $data = null;
+    public int $recordsFiltered = 0;
+    public int $recordsTotal = 0;
+    public MetaDto|null $meta = null;
 
-    /**
-     * Method call for not not complete request
-     *
-     * @param Response $response
-     * @param Request $request
-     * @return \Illuminate\Http\Response | String $data
-     */
-    public function requestNotComplete(Response $response, Request $request = null)
+    public function result(): JsonResponse
     {
-        $response->setCode('204');
-        return $this->formatData($response, $request);
+        return response()->json([
+            'status' => $this->code >= 200 && $this->code < 300 ? 'success' : 'error',
+            'response' => [
+                'message' => $this->message,
+                'data' => $this->data,
+                'recordsFiltered' => $this->recordsFiltered,
+                'recordsTotal' => $this->recordsTotal,
+                'meta' => $this->meta?->toArray(),
+            ]
+        ], $this->code);
     }
 
-    /**
-     * Method for final result
-     *
-     * @param Response $response
-     * @param Request|null $request
-     * @return \Illuminate\Http\Response | String $data | JSON $data
-     */
-    private function formatData(Response $response, Request $request = null)
+    public function success(mixed $data = null, string $message = 'Success'): JsonResponse
     {
-        if ($response->getMessage() == null) {
-            $response->setMessage(trans('smartresponse::message.' . $response->getCode()));
+        $this->code = 200;
+        $this->message = $message;
+        $this->data = $data;
+        return $this->result();
+    }
+
+    public function created(mixed $data = null, string $message = 'Created'): JsonResponse
+    {
+        $this->code = 201;
+        $this->message = $message;
+        $this->data = $data;
+        return $this->result();
+    }
+
+    public function notFound(string $message = 'Not found'): JsonResponse
+    {
+        $this->code = 404;
+        $this->message = $message;
+        $this->data = null;
+        return $this->result();
+    }
+
+    public function unprocessableEntity(string $message = 'Validation error', mixed $errors = null): JsonResponse
+    {
+        $this->code = 422;
+        $this->message = $message;
+        $this->data = $errors;
+        return $this->result();
+    }
+
+    public function serverError(string $message = 'Internal server error'): JsonResponse
+    {
+        $this->code = 500;
+        $this->message = $message;
+        $this->data = null;
+        return $this->result();
+    }
+
+    public function handle(Throwable $e): JsonResponse
+    {
+        if ($e instanceof ValidationException) {
+            return $this->unprocessableEntity('Validation failed', $e->errors());
         }
 
-        if ($response->getCode() == null) {
-            $response->setCode('200');
+        if ($e instanceof ModelNotFoundException) {
+            return $this->notFound('Resource not found');
         }
 
-        if ($response->getData() == null) {
-            $response->setData(array());
+        if ($e instanceof HttpExceptionInterface) {
+            $this->code = $e->getStatusCode();
+            $this->message = $e->getMessage();
+            return $this->result();
         }
 
-        if (request()->wantsJson() || ($request != "" && $request->wantsJson())) {
-            return $this->responseJson($response);
-        } else {
-            if ($response->getRedirect() != null) {
-                $inputs = [];
-                foreach (request()->all() as $key => $value) {
-                    $inputs[$key] = $value;
-                }
-                unset($inputs['_token']);
-                $messages = [];
-                $messages['code'] = $response->getCode();
-                $messages['message'] = $response->getMessage();
-                return redirect($response->getRedirect())
-                    ->with($messages)
-                    ->withInput($inputs);
-            } else {
-                return $this->returnHtml($response);
-            }
-        }
-    }
-
-    /**
-     * @param $response
-     * @return array
-     */
-    private function responseJson(Response $response): array
-    {
-        $jsonResponse = array();
-        $jsonResponse['message'] = $response->getMessage();
-        $jsonResponse['code'] = $response->getCode();
-
-        if (!is_array($response->getData()) && method_exists($response->getData(), 'items')) {
-            $jsonResponse['data'] = $response->getData()->items();
-        } else {
-            $jsonResponse['data'] = $response->getData();
-        }
-
-        if (!is_array($response->getData()) && method_exists($response->getData(), 'perPage')) {
-            $jsonResponse['per_page'] = $response->getData()->perPage();
-        }
-
-        if (!is_array($response->getData()) && method_exists($response->getData(), 'currentPage')) {
-            $jsonResponse['current_page'] = $response->getData()->currentPage();
-        }
-
-        if (!is_array($response->getData()) && method_exists($response->getData(), 'path')) {
-            $jsonResponse['path'] = $response->getData()->path();
-        }
-        
-        $jsonResponse['draw'] = request('draw') != null ? request('draw') : 1;
-
-        $jsonResponse['recordsFiltered'] = $response->getRecordsFiltered() != null ? $response->getRecordsFiltered() : 0;
-
-        $jsonResponse['recordsTotal'] = $response->getRecordsTotal() != null ? $response->getRecordsTotal() : 0;
-
-        return $jsonResponse;
-    }
-
-    /**
-     * @param Response $response
-     * @return Factory|View|null
-     */
-    private function returnHtml(Response $response)
-    {
-        if (view()->exists($response->getView())) {
-            return view($response->getView(), $response->getData());
-        } else {
-            if (env("APP_DEBUG")) {
-                dd('No HTML Template Found');
-            } else {
-                abort(404);
-            }
-            return null;
-        }
-    }
-
-    /**
-     * Method if data not found
-     *
-     * @param Response $response
-     * @param Request $request
-     * @return \Illuminate\Http\Response | String $data
-     */
-    public function dataFound(Response $response, Request $request = null)
-    {
-        $response->setCode('302');
-        return $this->formatData($response, $request);
-    }
-
-    /**
-     * Method for request denied
-     *
-     * @param Response $response
-     * @param Request $request
-     * @return \Illuminate\Http\Response | String $data
-     */
-    public function requestDenied(Response $response, Request $request = null)
-    {
-        $response->setCode('401');
-        return $this->formatData($response, $request);
-    }
-
-    /**
-     * Method if data not found
-     *
-     * @param Response $response
-     * @param Request $request
-     * @return \Illuminate\Http\Response | String $data
-     */
-    public function dataNotFound(Response $response, Request $request = null)
-    {
-        $response->setCode('404');
-        return $this->formatData($response, $request);
-    }
-
-    /**
-     * Method for forbidden access
-     *
-     * @param Response $response
-     * @param Request $request
-     * @return \Illuminate\Http\Response | String $data
-     */
-    public function forbiddenAccess(Response $response, Request $request = null)
-    {
-        $response->setCode('403');
-        return $this->formatData($response, $request);
-    }
-
-    /**
-     * Method for save data failed
-     *
-     * @param Response $response
-     * @param Request $request
-     * @return \Illuminate\Http\Response | String $data
-     */
-    public function saveDataFailed(Response $response, Request $request = null)
-    {
-        $response->setCode('406');
-        return $this->formatData($response, $request);
-    }
-
-    /**
-     * Method for save data success
-     *
-     * @param Response $response
-     * @param Request $request
-     * @return \Illuminate\Http\Response | String $data
-     */
-    public function saveDataSuccess(Response $response, Request $request = null)
-    {
-        $response->setCode('201');
-        return $this->formatData($response, $request);
-    }
-
-    /**
-     * Method for success request
-     *
-     * @param Response $response
-     * @param Request|null $request
-     * @return \Illuminate\Http\Response | String $data
-     */
-    public function success(Response $response, Request $request = null)
-    {
-        $response->setCode('200');
-        return $this->formatData($response, $request);
-    }
-
-    /**
-     * @param Response $response
-     * @param Request|null $request
-     * @return \Illuminate\Http\Response | String
-     */
-    public function globalResponse(Response $response, Request $request = null)
-    {
-        return $this->formatData($response, $request);
-    }
-
-    /**
-     * @param $response
-     * @param $redirect
-     * @return RedirectResponse
-     */
-    private function getRedirect(Response $response, $redirect)
-    {
-        if ($response->getRedirect() == null) {
-            return back()->withInput();
-        } else {
-            return $redirect;
-        }
+        return $this->serverError(config('app.debug') ? $e->getMessage() : 'Something went wrong');
     }
 }

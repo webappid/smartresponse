@@ -10,11 +10,9 @@ namespace WebAppId\SmartResponse;
 
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
-use Illuminate\View\View;
 use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
+use Throwable;
 
 /**
  * Class SmartResponse
@@ -47,7 +45,12 @@ class SmartResponse
     {
         $this->code = 200;
         $this->message = $message;
-        $this->data = $data;
+        $this->recordsFiltered = $data->total ?? 0;
+        $this->meta = new MetaDto();
+        $this->meta->perPage = $data->per_page;
+        $this->meta->page = $data->current_page;
+        $this->meta->lastPage = $data->last_page;
+        $this->data = $data->data;
         return $this->result();
     }
 

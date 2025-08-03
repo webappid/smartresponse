@@ -1,23 +1,15 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: dyangalih
- * Date: 2019-01-21
- * Time: 23:52
- */
 
 namespace WebAppId\SmartResponse;
 
+use Illuminate\Auth\Access\AuthorizationException;
+use Illuminate\Auth\AuthenticationException;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
 use Throwable;
 
-/**
- * Class SmartResponse
- * @package WebAppId\SmartResponse
- */
 class SmartResponse
 {
     public int $code = 200;
@@ -25,7 +17,7 @@ class SmartResponse
     public mixed $data = null;
     public int $records_filtered = 0;
     public int $records_total = 0;
-    public MetaDto|null $meta = null;
+    public ?MetaDto $meta = null;
 
     public function result(): JsonResponse
     {
@@ -45,12 +37,14 @@ class SmartResponse
     {
         $this->code = 200;
         $this->message = $message;
+
         $this->records_filtered = $data->total ?? 0;
         $this->meta = new MetaDto();
         $this->meta->per_page = $data?->per_page ?? 0;
         $this->meta->page = $data?->current_page ?? 0;
         $this->meta->last_page = $data?->last_page ?? 0;
         $this->data = $data?->data ?? [];
+
         return $this->result();
     }
 
@@ -59,6 +53,7 @@ class SmartResponse
         $this->code = 201;
         $this->message = $message;
         $this->data = $data;
+
         return $this->result();
     }
 
@@ -67,6 +62,25 @@ class SmartResponse
         $this->code = 404;
         $this->message = $message;
         $this->data = null;
+
+        return $this->result();
+    }
+
+    public function unauthorized(string $message = 'Unauthorized'): JsonResponse
+    {
+        $this->code = 401;
+        $this->message = $message;
+        $this->data = null;
+
+        return $this->result();
+    }
+
+    public function forbidden(string $message = 'Forbidden'): JsonResponse
+    {
+        $this->code = 403;
+        $this->message = $message;
+        $this->data = null;
+
         return $this->result();
     }
 
@@ -75,6 +89,7 @@ class SmartResponse
         $this->code = 422;
         $this->message = $message;
         $this->data = $errors;
+
         return $this->result();
     }
 
@@ -83,6 +98,15 @@ class SmartResponse
         $this->code = 500;
         $this->message = $message;
         $this->data = null;
+
+        return $this->result();
+    }
+
+    public function custom(int $code, string $message = '', mixed $data = null): JsonResponse
+    {
+        $this->code = $code;
+        $this->message = $message;
+        $this->data = $data;
         return $this->result();
     }
 
@@ -92,13 +116,21 @@ class SmartResponse
             return $this->unprocessableEntity('Validation failed', $e->errors());
         }
 
+        if ($e instanceof AuthenticationException) {
+            return $this->unauthorized('You are not authenticated');
+        }
+
+        if ($e instanceof AuthorizationException) {
+            return $this->forbidden('You are not authorized to perform this action');
+        }
+
         if ($e instanceof ModelNotFoundException) {
             return $this->notFound('Resource not found');
         }
 
         if ($e instanceof HttpExceptionInterface) {
             $this->code = $e->getStatusCode();
-            $this->message = $e->getMessage();
+            $this->message = $e->getMessage() ?: 'HTTP error';
             return $this->result();
         }
 

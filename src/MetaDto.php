@@ -12,12 +12,12 @@ class MetaDto
     /**
      * Items per page
      */
-    public int $perPage = 10;
+    public int $per_page = 10;
 
     /**
      * Last page number
      */
-    public int $lastPage = 1;
+    public int $last_page = 1;
 
     /**
      * Convert MetaDto to array
@@ -26,8 +26,8 @@ class MetaDto
     {
         return [
             'page' => $this->page,
-            'perPage' => $this->perPage,
-            'lastPage' => $this->lastPage,
+            'per_page' => $this->per_page,
+            'last_page' => $this->last_page,
         ];
     }
 }

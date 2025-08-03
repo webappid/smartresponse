@@ -23,8 +23,8 @@ class SmartResponse
     public int $code = 200;
     public string $message = '';
     public mixed $data = null;
-    public int $recordsFiltered = 0;
-    public int $recordsTotal = 0;
+    public int $records_filtered = 0;
+    public int $records_total = 0;
     public MetaDto|null $meta = null;
 
     public function result(): JsonResponse
@@ -34,8 +34,8 @@ class SmartResponse
             'response' => [
                 'message' => $this->message,
                 'data' => $this->data,
-                'recordsFiltered' => $this->recordsFiltered,
-                'recordsTotal' => $this->recordsTotal,
+                'records_filtered' => $this->records_filtered,
+                'records_total' => $this->records_total,
                 'meta' => $this->meta?->toArray(),
             ]
         ], $this->code);
@@ -45,12 +45,12 @@ class SmartResponse
     {
         $this->code = 200;
         $this->message = $message;
-        $this->recordsFiltered = $data->total ?? 0;
+        $this->records_filtered = $data->total ?? 0;
         $this->meta = new MetaDto();
-        $this->meta->perPage = $data->per_page;
-        $this->meta->page = $data->current_page;
-        $this->meta->lastPage = $data->last_page;
-        $this->data = $data->data;
+        $this->meta->per_page = $data?->per_page ?? 0;
+        $this->meta->page = $data?->current_page ?? 0;
+        $this->meta->last_page = $data?->last_page ?? 0;
+        $this->data = $data?->data ?? [];
         return $this->result();
     }
 

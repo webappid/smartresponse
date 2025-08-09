@@ -10,15 +10,54 @@ use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
 use Throwable;
 
+/**
+ * Class SmartResponse
+ *
+ * Provides standardized JSON API responses for Laravel applications.
+ */
 class SmartResponse
 {
+    /**
+     * HTTP status code
+     * @var int
+     */
     public int $code = 200;
+
+    /**
+     * Response message
+     * @var string
+     */
     public string $message = '';
+
+    /**
+     * Response data
+     * @var mixed
+     */
     public mixed $data = null;
+
+    /**
+     * Number of filtered records (for paginated responses)
+     * @var int
+     */
     public int $records_filtered = 0;
+
+    /**
+     * Total number of records (for paginated responses)
+     * @var int
+     */
     public int $records_total = 0;
+
+    /**
+     * Pagination metadata
+     * @var MetaDto|null
+     */
     public ?MetaDto $meta = null;
 
+    /**
+     * Build the JSON response.
+     *
+     * @return JsonResponse
+     */
     public function result(): JsonResponse
     {
         return response()->json([
@@ -33,21 +72,39 @@ class SmartResponse
         ], $this->code);
     }
 
-    public function success(mixed $data = null, string $message = 'Success'): JsonResponse
+    /**
+     * Return a success response, optionally with paginated data.
+     *
+     * @param array $data
+     * @param string $message
+     * @return JsonResponse
+     */
+    public function success(array $data = [], string $message = 'Success'): JsonResponse
     {
         $this->code = 200;
         $this->message = $message;
 
-        $this->records_filtered = $data->total ?? 0;
-        $this->meta = new MetaDto();
-        $this->meta->per_page = $data?->per_page ?? 0;
-        $this->meta->page = $data?->current_page ?? 0;
-        $this->meta->last_page = $data?->last_page ?? 0;
-        $this->data = $data?->data ?? [];
-
+        if (!empty($data)) {
+            $this->records_total = $data['total'] ?? 0;
+            $this->records_filtered = $data['total'] ?? 0;
+            $this->meta = new MetaDto();
+            $this->meta->per_page = $data['per_page'] ?? 0;
+            $this->meta->page = $data['current_page'] ?? 0;
+            $this->meta->last_page = $data['last_page'] ?? 0;
+            $this->data = $data['data'] ?? [];
+        } else {
+            $this->data = [];
+        }
         return $this->result();
     }
 
+    /**
+     * Return a created response (HTTP 201).
+     *
+     * @param mixed $data
+     * @param string $message
+     * @return JsonResponse
+     */
     public function created(mixed $data = null, string $message = 'Created'): JsonResponse
     {
         $this->code = 201;
@@ -57,6 +114,12 @@ class SmartResponse
         return $this->result();
     }
 
+    /**
+     * Return a not found response (HTTP 404).
+     *
+     * @param string $message
+     * @return JsonResponse
+     */
     public function notFound(string $message = 'Not found'): JsonResponse
     {
         $this->code = 404;
@@ -66,6 +129,12 @@ class SmartResponse
         return $this->result();
     }
 
+    /**
+     * Return an unauthorized response (HTTP 401).
+     *
+     * @param string $message
+     * @return JsonResponse
+     */
     public function unauthorized(string $message = 'Unauthorized'): JsonResponse
     {
         $this->code = 401;
@@ -75,6 +144,12 @@ class SmartResponse
         return $this->result();
     }
 
+    /**
+     * Return a forbidden response (HTTP 403).
+     *
+     * @param string $message
+     * @return JsonResponse
+     */
     public function forbidden(string $message = 'Forbidden'): JsonResponse
     {
         $this->code = 403;
@@ -84,6 +159,13 @@ class SmartResponse
         return $this->result();
     }
 
+    /**
+     * Return an unprocessable entity response (HTTP 422), typically for validation errors.
+     *
+     * @param string $message
+     * @param mixed $errors
+     * @return JsonResponse
+     */
     public function unprocessableEntity(string $message = 'Validation error', mixed $errors = null): JsonResponse
     {
         $this->code = 422;
@@ -93,6 +175,12 @@ class SmartResponse
         return $this->result();
     }
 
+    /**
+     * Return a server error response (HTTP 500).
+     *
+     * @param string $message
+     * @return JsonResponse
+     */
     public function serverError(string $message = 'Internal server error'): JsonResponse
     {
         $this->code = 500;
@@ -102,6 +190,14 @@ class SmartResponse
         return $this->result();
     }
 
+    /**
+     * Return a custom response with arbitrary status code and data.
+     *
+     * @param int $code
+     * @param string $message
+     * @param mixed $data
+     * @return JsonResponse
+     */
     public function custom(int $code, string $message = '', mixed $data = null): JsonResponse
     {
         $this->code = $code;
@@ -110,6 +206,12 @@ class SmartResponse
         return $this->result();
     }
 
+    /**
+     * Handle common exceptions and return appropriate JSON responses.
+     *
+     * @param Throwable $e
+     * @return JsonResponse
+     */
     public function handle(Throwable $e): JsonResponse
     {
         if ($e instanceof ValidationException) {

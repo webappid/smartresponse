@@ -10,7 +10,7 @@ Install via Composer:
 
 ```bash
 composer require webappid/smartresponse
-````
+```
 
 ---
 
@@ -22,35 +22,39 @@ Use this when building API endpoints that return JSON:
 
 ```php
 use Illuminate\Http\Request;
-use WebAppId\SmartResponse\Response;
 use WebAppId\SmartResponse\SmartResponse;
 
 class SampleController
 {
-    public function store(Request $request, SampleService $service)
+    public function store(Request $request, SampleService $service, SmartResponse $smartResponse)
     {
-        $response = new ResponseDto();
-
         try {
             $data = $service->create($request->all());
-            return $response->created('Sample created', $data);
+            return $smartResponse->created($data, 'Sample created');
         } catch (\Throwable $e) {
-            return $response->handle($e);
+            return $smartResponse->handle($e);
         }
     }
 }
 ```
 
 **Response Output:**
+
 ```json
 {
-    "code": 201,
-    "message": "Create Data Success",
+  "status": "success",
+  "response": {
+    "message": "Sample created",
     "data": {
-        //Your request data
-    }
+      // Your request data
+    },
+    "records_filtered": 0,
+    "records_total": 0,
+    "meta": null
+  }
 }
 ```
+
 ## 💬 Support
 
 If you have any questions or feedback about this package, feel free to reach out:
